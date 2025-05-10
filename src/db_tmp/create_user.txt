@@ -1,0 +1,23 @@
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id VARCHAR(255) NOT NULL;
+    username TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    email TEXT UNIQUE,
+    phone TEXT,
+    avatar_url TEXT,
+    balance NUMERIC(10, 2) DEFAULT 0,
+    currency TEXT DEFAULT 'USD',
+    is_active BOOLEAN DEFAULT TRUE,
+    is_admin BOOLEAN DEFAULT FALSE,
+    role TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP,
+    failed_login_attempts INT DEFAULT 0,
+    last_failed_login TIMESTAMP,
+    reset_token TEXT,
+    reset_token_expires_at TIMESTAMP,
+    preferences JSONB,
+    metadata JSONB
+);
