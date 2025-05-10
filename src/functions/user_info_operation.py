@@ -6,8 +6,9 @@ from fastapi import HTTPException
 from authlib.integrations.starlette_client import OAuth
 from src.utils.config_loader import SERVICE_CONFIG
 import os
+import logging
 
-
+logger = logging.getLogger(__name__)
 
 class UserInfoOperation:
     def __init__(self, model_adapter: ModelAdapter, postgresql_service: PostgresqlService) -> None:
@@ -15,17 +16,20 @@ class UserInfoOperation:
         self.postgresql_service = postgresql_service
         self.oauth = OAuth()
         self.service_config = SERVICE_CONFIG
-        self.oauth.register(
-            name='google',
-            client_id=self.service_config.google.client_id,
-            client_secret=self.service_config.google.client_secret,
-            authorize_url='https://accounts.google.com/o/oauth2/auth',
-            authorize_params=None,
-            access_token_url='https://accounts.google.com/o/oauth2/token',
-            access_token_params=None,
-            refresh_token_url=None,
-            client_kwargs={'scope': 'openid profile email'}
-        )
+        try:
+            self.oauth.register(
+                name='google',
+                client_id=self.service_config.google.client_id,
+                client_secret=self.service_config.google.client_secret,
+                authorize_url='https://accounts.google.com/o/oauth2/auth',
+                authorize_params=None,
+                access_token_url='https://accounts.google.com/o/oauth2/token',
+                access_token_params=None,
+                refresh_token_url=None,
+                client_kwargs={'scope': 'openid profile email'}
+            )
+        except Exception as e:
+            logger.info(f"error is:{e}")
 
 
     async def login_service(self, login_request: LoginRequest):
@@ -43,6 +47,7 @@ class UserInfoOperation:
 
     async def google_redirect_callback(self, request):
         redirect_uri = self.service_config.google.google_redirect_uri
+        logger.info(f"google login request is:{request}, redirect url is:{redirect_uri}")
         return await self.oauth.google.authorize_redirect(request, redirect_uri)
 
     async def google_oauth_callback(self,request):
