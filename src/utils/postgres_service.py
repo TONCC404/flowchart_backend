@@ -45,7 +45,7 @@ class PostgresqlService:
             host=self.service_config.postgresql.host,
             port=self.service_config.postgresql.port,
             user=self.service_config.postgresql.user,
-            password=self.service_config.postgresql.password,
+            password=str(self.service_config.postgresql.password),
             database=self.service_config.postgresql.database
         )
 
@@ -68,26 +68,28 @@ class PostgresqlService:
             if self.connection:
                 await self.connection.close()
 
-    async def insert_userInfo(self, username, password, email=None, phone=None, avatar_url=None, balance=0, currency="USD"):
+    async def insert_userInfo(self, username, password=None, org=None,email=None, phone=None, avatar_url=None, balance=0, currency="USD"):
 
         try:
             insert_query = """
             INSERT INTO users (
-                id, username, password_hash, email, phone, avatar_url, balance, currency, is_active, created_at
+                id, username, org, password_hash, email, phone, avatar_url, balance, currency, is_active, created_at
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
             )
         """
             user_id = str(uuid.uuid4())
             created_at = datetime.now()
             is_active = True
             pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-            hashed_password = pwd_context.hash(password)
+            hashed_password=None
+            if password:
+                hashed_password = pwd_context.hash(password)
             if not self.connection or self.connection.is_closed():
                 await self.create_connection()
             await self.connection.execute(
                 insert_query,
-                user_id, username, hashed_password, email, phone, avatar_url, balance, currency, is_active, created_at
+                user_id, username, org, hashed_password, email, phone, avatar_url, balance, currency, is_active, created_at
             )
 
             print(f"User {username} inserted successfully.")
@@ -99,7 +101,7 @@ class PostgresqlService:
                 await self.connection.close()
 
 
-    async def login_verification(self, username, password):
+    async def login_verification(self, username, password=None):
         try:
             if not self.connection or self.connection.is_closed():
                 await self.create_connection()

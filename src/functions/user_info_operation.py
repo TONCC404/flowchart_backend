@@ -5,6 +5,8 @@ from src.utils.token_verification import create_access_token
 from fastapi import HTTPException
 from src.utils.config_loader import SERVICE_CONFIG,oauth
 from src.utils.log_config import log_config
+from jose import jwt
+from datetime import datetime, timedelta
 logger = log_config()
 
 class UserInfoOperation:
@@ -47,10 +49,14 @@ class UserInfoOperation:
         logger.info(f"user info is:{user_info}")
         email = user_info['email']
         user_name = user_info['name']
-        user_pic = user_name['picture']
-        #todo judge whether user in pgdb
+        user_pic = user_info['picture']
+        result = await self.postgresql_service.check_user_exists(username=user_name)
+        # Create JWT token
+        access_token = create_access_token(data={"sub": user_name})
+        if not result:
+            await self.postgresql_service.insert_userInfo(username=user_name, email=email, avatar_url=user_pic)
+        return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
 
-        return {"message": "Login successful", "user_info": user_info}
 
     async def register(self, register_request: RegisterRequest):
         username = register_request.username
@@ -60,7 +66,7 @@ class UserInfoOperation:
             return {"status": "fail", "message": "User already exist"}
             # raise HTTPException(status_code=400, detail="Username already exists")
         # Hash the password before storing it
-        await self.postgresql_service.insert_userInfo(username, password)
+        await self.postgresql_service.insert_userInfo(username=username, password=password)
         return {"status": "success", "message": "User registered successfully"}
 
 

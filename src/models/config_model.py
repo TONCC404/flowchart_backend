@@ -45,7 +45,7 @@ class PostgresqlConfig(BaseModel):
     port: int
     database: str
     user: str
-    password: str
+    password: str| int
     # embedding_model: EmbeddingConfig
 
 class GoogleConfig(BaseModel):
