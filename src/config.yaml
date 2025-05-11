@@ -14,7 +14,7 @@ baidu:
 google:
   client_id: 473106904157-p0lf2foir7f3mdu0d2amp4b6aithud66.apps.googleusercontent.com
   client_secret: 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
-  google_redirect_uri: http://127.0.0.1:8081/google_authorize
+  google_redirect_uri: http://127.0.0.1:8000/google_authorize
 
 postgresql:
   host: gz-postgres-q1pu1fyd.sql.tencentcdb.com

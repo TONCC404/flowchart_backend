@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.features.generate_flow import FlowGeneration
-from src.functions.user_info_operation import UserInfoOperation
+
 from src.functions.flowchart_operation import FlowChartOperation
 from src.utils.config_loader import SERVICE_CONFIG
 from src.utils.model_adapter import ModelAdapter
@@ -20,6 +20,9 @@ app = FastAPI()
 # Configure CORS
 origins = ["https://yiyan.baidu.com",
            "http://localhost:3000",
+           "http://localhost:8000",
+           "http://127.0.0.1:3000",
+           "http://127.0.0.1:8000",
             "https://google.com"
            ]
 app.add_middleware(
@@ -30,7 +33,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 secret_key = secrets.token_hex(32)
-app.add_middleware(SessionMiddleware, secret_key=secret_key)
+app.add_middleware(SessionMiddleware, secret_key=secret_key, same_site="lax",https_only=False)
+from src.functions.user_info_operation import UserInfoOperation
 
 def make_json_response(data, status_code=200):
     return JSONResponse(content=data, status_code=status_code)
@@ -72,8 +76,9 @@ async def login_via_google(request: Request):
 @app.get('/google_authorize')
 async def auth_callback(request: Request):
     try:
+        print(request)
         user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-        result = user_info_operation.google_oauth_callback(request)
+        result = await user_info_operation.google_oauth_callback(request)
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -232,4 +237,4 @@ async def serve_static(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8081)
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
