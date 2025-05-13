@@ -51,5 +51,15 @@ class DeleteFlowRequest(BaseModel):
     user_id: str
     flow_id: str
 
+class CardPaymentRequest(BaseModel):
+    amount: int  # in cents
+    currency: str
+    plan_name: str
+    email: str
+
+class PayPalOrderRequest(BaseModel):
+    amount: float
+    planName: str | None
+
 class QueryFlowRequest(BaseModel):
     user_id: str

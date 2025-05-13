@@ -53,10 +53,23 @@ class GoogleConfig(BaseModel):
     client_secret: str
     google_redirect_uri: str
 
+class WeChatConfig(BaseModel):
+    wechat_app_id: str
+    wechat_app_secret: str
+    wechat_redirect_uri: str
+
+class PayPalConfig(BaseModel):
+    paypal_client_id: str
+    paypal_client_secret: str
+    paypal_redirect_uri: str
+    cancel_url: str
+
 class ServiceConfig(BaseModel):
     llm: LLMConfig
     baidu: BaiduConfig
     google: GoogleConfig
+    wechat: WeChatConfig
+    paypal: PayPalConfig
     postgresql: PostgresqlConfig
     features: FeaturesConfig
 
