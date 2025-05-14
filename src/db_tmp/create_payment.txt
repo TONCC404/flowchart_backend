@@ -1,0 +1,11 @@
+CREATE TABLE payments (
+    id SERIAL PRIMARY KEY,
+    stripe_payment_intent_id VARCHAR(255) NOT NULL UNIQUE,
+    username VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    plan_name VARCHAR(100),
+    amount INTEGER NOT NULL, -- 单位: 分 (cents)
+    currency VARCHAR(10) DEFAULT 'usd',
+    status VARCHAR(50) DEFAULT 'created', -- 例如: created, succeeded, failed
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
