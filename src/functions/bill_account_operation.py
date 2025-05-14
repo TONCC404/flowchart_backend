@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from src.utils.model_adapter import ModelAdapter
 from src.utils.postgres_service import PostgresqlService
 from src.models.request_model import LoginRequest, RegisterRequest
