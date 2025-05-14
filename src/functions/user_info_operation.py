@@ -5,8 +5,9 @@ from src.utils.token_verification import create_access_token
 from fastapi import HTTPException
 from src.utils.config_loader import SERVICE_CONFIG,oauth
 from src.utils.log_config import log_config
-from jose import jwt
-from datetime import datetime, timedelta
+import requests,uuid
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 logger = log_config()
 
 class UserInfoOperation:
@@ -56,6 +57,57 @@ class UserInfoOperation:
         if not result:
             await self.postgresql_service.insert_userInfo(username=user_name, email=email, avatar_url=user_pic)
         return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
+
+    async def wechat_login(self):
+        state = uuid.uuid4().hex
+        wechat_qr_url = (
+            f"https://open.weixin.qq.com/connect/qrconnect"
+            f"?appid={self.service_config.wechat.wechat_app_id}&redirect_uri={self.service_config.wechat.wechat_redirect_uri}"
+            f"&response_type=code&scope=snsapi_login&state={state}"
+        )
+        return {"qr_url": wechat_qr_url, "state": state}
+
+    async def wechat_oauth_callback(self,code):
+        token_url = (
+            f"https://api.weixin.qq.com/sns/oauth2/access_token"
+            f"?appid={self.service_config.wechat.wechat_app_id}&secret={self.service_config.wechat.wechat_app_secret}&code={code}&grant_type=authorization_code"
+        )
+        token_response = requests.get(token_url).json()
+
+        if "errcode" in token_response:
+            raise HTTPException(status_code=400, detail="Failed to authenticate with WeChat")
+
+        access_token = token_response["access_token"]
+        openid = token_response["openid"]
+
+        user_info_url = (
+            f"https://api.weixin.qq.com/sns/userinfo"
+            f"?access_token={access_token}&openid={openid}"
+        )
+        user_info = requests.get(user_info_url).json()
+
+        if "errcode" in user_info:
+            raise HTTPException(status_code=400, detail="Failed to fetch user info")
+
+        # 检查 openid 是否已注册
+        #todo check db whether user has been registered
+        # for username, user in USER_DB.items():
+        #     if user.get("openid") == openid:
+        #         jwt_token = create_access_token(data={"sub": username})
+        #         return {
+        #             "access_token": jwt_token,
+        #             "token_type": "bearer",
+        #             "avatar": user["avatar"],
+        #         }
+        return JSONResponse(
+            status_code=200,
+            content=jsonable_encoder(
+                {
+                    "message": "WeChat login successful, please bind or register an account.",
+                    "wechat_user_info": user_info,
+                }
+            ),
+        )
 
 
     async def register(self, register_request: RegisterRequest):

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Query
 from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 from src.features.generate_flow import FlowGeneration
@@ -8,10 +8,11 @@ from src.utils.config_loader import SERVICE_CONFIG
 from src.utils.model_adapter import ModelAdapter
 import json
 from pathlib import Path
-from src.models.request_model import FlowRequest, LoginRequest, RegisterRequest, SaveFlowRequest, DeleteFlowRequest, QueryFlowRequest
+from src.models.request_model import FlowRequest, LoginRequest, RegisterRequest, SaveFlowRequest, DeleteFlowRequest, QueryFlowRequest,PayPalOrderRequest
 from src.utils.postgres_service import PostgresqlService
 from starlette.middleware.sessions import SessionMiddleware
 import secrets
+from src.functions.bill_account_operation import BillAccountOperation
 
 model_adapter = ModelAdapter(service_config=SERVICE_CONFIG)
 postgresql_service = PostgresqlService(service_config=SERVICE_CONFIG)
@@ -38,6 +39,17 @@ from src.functions.user_info_operation import UserInfoOperation
 
 def make_json_response(data, status_code=200):
     return JSONResponse(content=data, status_code=status_code)
+
+
+
+@app.post("/paypal/create_order")
+async def create_paypal_order(data: PayPalOrderRequest):
+    try:
+        bill_account = BillAccountOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+        return await bill_account.paypal_account_operation(data.amount)
+    except Exception as e:
+        print("PayPal create order error:", e)
+        raise HTTPException(status_code=500, detail="PayPal order creation failed")
 
 @app.post("/generate_flow_picture")
 async def generate_sentences(flow_request: FlowRequest):
@@ -76,73 +88,28 @@ async def login_via_google(request: Request):
 @app.get('/google_authorize')
 async def auth_callback(request: Request):
     try:
-        print(request)
         user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
         result = await user_info_operation.google_oauth_callback(request)
         return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# @app.get("/wechat_login")
-# async def wechat_login():
-#     """
-#     Get WeChat login QR code URL.
-#     """
-#     state = uuid.uuid4().hex
-#     wechat_qr_url = (
-#         f"https://open.weixin.qq.com/connect/qrconnect"
-#         f"?appid={WECHAT_APP_ID}&redirect_uri={WECHAT_REDIRECT_URI}"
-#         f"&response_type=code&scope=snsapi_login&state={state}"
-#     )
-#     return {"qr_url": wechat_qr_url, "state": state}
-#
-#
-# @app.get("/wechat-login-callback")
-# async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
-#     """
-#     Handle WeChat login callback.
-#     """
-#     # 获取 access_token 和 openid
-#     token_url = (
-#         f"https://api.weixin.qq.com/sns/oauth2/access_token"
-#         f"?appid={WECHAT_APP_ID}&secret={WECHAT_APP_SECRET}&code={code}&grant_type=authorization_code"
-#     )
-#     token_response = requests.get(token_url).json()
-#
-#     if "errcode" in token_response:
-#         raise HTTPException(status_code=400, detail="Failed to authenticate with WeChat")
-#
-#     access_token = token_response["access_token"]
-#     openid = token_response["openid"]
-#
-#     user_info_url = (
-#         f"https://api.weixin.qq.com/sns/userinfo"
-#         f"?access_token={access_token}&openid={openid}"
-#     )
-#     user_info = requests.get(user_info_url).json()
-#
-#     if "errcode" in user_info:
-#         raise HTTPException(status_code=400, detail="Failed to fetch user info")
-#
-#     # 检查 openid 是否已注册
-#     for username, user in USER_DB.items():
-#         if user.get("openid") == openid:
-#             jwt_token = create_access_token(data={"sub": username})
-#             return {
-#                 "access_token": jwt_token,
-#                 "token_type": "bearer",
-#                 "avatar": user["avatar"],
-#             }
-#
-#     return JSONResponse(
-#         status_code=200,
-#         content=jsonable_encoder(
-#             {
-#                 "message": "WeChat login successful, please bind or register an account.",
-#                 "wechat_user_info": user_info,
-#             }
-#         ),
-#     )
+@app.get("/wechat_login")
+async def wechat_login():
+    """
+    Get WeChat login QR code URL.
+    """
+    user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+    return user_info_operation.wechat_login()
+
+
+@app.get("/wechat_login_callback")
+async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
+    """
+    Handle WeChat login callback.
+    """
+    user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+    return user_info_operation.wechat_oauth_callback(code)
 
 
 @app.post("/register")
@@ -150,6 +117,19 @@ async def register_user(register_request: RegisterRequest):
     user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
     result = await user_info_operation.register(register_request)
     return result
+
+# @app.post("/create-payment-intent")
+# def create_payment_intent(data: PaymentRequest):
+#     try:
+#         intent = stripe.PaymentIntent.create(
+#             amount=data.amount,
+#             currency=data.currency,
+#             description=f"Subscription to {data.plan_name}",
+#             receipt_email=data.email,
+#         )
+#         return {"clientSecret": intent.client_secret}
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/save_flow")
 async def save_flow(save_flow_request: SaveFlowRequest):

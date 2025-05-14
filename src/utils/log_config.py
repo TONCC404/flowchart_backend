@@ -9,5 +9,4 @@ def log_config():
     )
 
     logger = logging.getLogger(__name__)
-    logger.info("Starting application...")
     return logger
