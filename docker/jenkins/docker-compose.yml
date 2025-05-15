@@ -1,0 +1,13 @@
+services:
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    ports:
+      - "8080:8080"
+      - "50000:50000"  # 用于代理节点连接
+    environment:
+      - JENKINS_USER=admin        # 设置用户名
+      - JENKINS_PASS=admin123     # 设置密码
+    volumes:
+      - ./jenkins_home:/var/jenkins_home
