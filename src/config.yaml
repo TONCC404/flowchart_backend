@@ -1,3 +1,10 @@
+origins:
+  - "http://localhost:8006"
+  - "http://localhost:8000"
+  - "http://127.0.0.1:8006"
+  - "http://127.0.0.1:8000"
+  - "https://google.com"
+  - "http://www.cace.club:8006"
 
 llm:
   url: https://api.llm.net/v1/chat/completions

@@ -17,15 +17,7 @@ from src.functions.bill_account_operation import BillAccountOperation
 model_adapter = ModelAdapter(service_config=SERVICE_CONFIG)
 postgresql_service = PostgresqlService(service_config=SERVICE_CONFIG)
 app = FastAPI()
-
-# Configure CORS
-origins = ["https://yiyan.baidu.com",
-           "http://localhost:3000",
-           "http://localhost:8000",
-           "http://127.0.0.1:3000",
-           "http://127.0.0.1:8000",
-            "https://google.com"
-           ]
+origins = SERVICE_CONFIG.origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -100,16 +92,16 @@ async def wechat_login():
     Get WeChat login QR code URL.
     """
     user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-    return user_info_operation.wechat_login()
+    return await user_info_operation.wechat_login()
 
 
-@app.get("/wechat_login_callback")
-async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
-    """
-    Handle WeChat login callback.
-    """
-    user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-    return user_info_operation.wechat_oauth_callback(code)
+# @app.get("/wechat_login_callback")
+# async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
+#     """
+#     Handle WeChat login callback.
+#     """
+#     user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+#     return await user_info_operation.wechat_oauth_callback(code)
 
 
 @app.post("/register")
@@ -217,4 +209,4 @@ async def serve_static(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=9876, log_level="info")
+    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")

@@ -65,6 +65,7 @@ class PayPalConfig(BaseModel):
     cancel_url: str
 
 class ServiceConfig(BaseModel):
+    origins: list[str]
     llm: LLMConfig
     baidu: BaiduConfig
     google: GoogleConfig
