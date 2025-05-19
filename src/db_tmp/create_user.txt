@@ -5,6 +5,7 @@ CREATE TABLE users (
     password_hash TEXT,
     org_id VARCHAR(255),
     org TEXT,
+    membership_type TEXT DEFAULT 'free',
     phone TEXT,
     avatar_url TEXT,
     balance NUMERIC(10, 2) DEFAULT 0,
