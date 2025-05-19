@@ -81,8 +81,9 @@ async def login_via_google(request: Request):
 async def auth_callback(request: Request):
     try:
         user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-        result = await user_info_operation.google_oauth_callback(request)
-        return JSONResponse(content=result)
+        return await user_info_operation.google_oauth_callback(request)
+        # result = await user_info_operation.google_oauth_callback(request)
+        # return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -209,4 +210,4 @@ async def serve_static(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

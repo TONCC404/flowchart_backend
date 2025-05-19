@@ -8,6 +8,8 @@ from src.utils.log_config import log_config
 import requests,uuid
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.responses import RedirectResponse
+from urllib.parse import urlencode
 logger = log_config()
 
 class UserInfoOperation:
@@ -56,7 +58,14 @@ class UserInfoOperation:
         access_token = create_access_token(data={"sub": user_name})
         if not result:
             await self.postgresql_service.insert_userInfo(username=user_name, email=email, avatar_url=user_pic)
-        return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
+        # return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
+        params = urlencode({
+            "token": access_token,
+            "avatar": user_pic,
+            "username": user_name
+        })
+        frontend_redirect_url = f"{self.service_config.frontend_redirect_url}/introduction?{params}"
+        return RedirectResponse(frontend_redirect_url)
 
     async def wechat_login(self):
         state = uuid.uuid4().hex

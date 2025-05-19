@@ -47,7 +47,8 @@ postgresql:
 #      encoding_format: float
 #      similarity: 0.7
 #      dimensions: 512
-
+#frontend_redirect_url: http://127.0.0.1:8006
+frontend_redirect_url: http://101.42.33.129:8006
 features:
   flow_generation:
     model: llm

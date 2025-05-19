@@ -72,6 +72,7 @@ class ServiceConfig(BaseModel):
     wechat: WeChatConfig
     paypal: PayPalConfig
     postgresql: PostgresqlConfig
+    frontend_redirect_url: str
     features: FeaturesConfig
 
 
