@@ -4,14 +4,20 @@ pipeline {
     stages {
         stage('Clone Source') {
             steps {
-                git 'https://github.com/TONCC404/flowchart_backend'
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[
+                        url: 'https://github.com/TONCC404/flowchart_backend',
+                        credentialsId: 'bbd8a232-d2d1-460d-9868-b14910c1ba18'
+                    ]]
+                ])
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    def imageName = "flowchart-app:latest"
+                    def imageName = "flowchart-backend:latest"
                     sh "docker build -t ${imageName} ."
                 }
             }
@@ -20,10 +26,10 @@ pipeline {
         stage('Run Container') {
             steps {
                 script {
-                    def containerName = "flowchart-app"
+                    def containerName = "flowchart-backend"
                     sh """
                         docker rm -f ${containerName} || true
-                        docker run -d --name ${containerName} -p 8000:8000 my-python-app:latest
+                        docker run -d --name ${containerName} -p 9876:9876 flowchart-backend:latest
                     """
                 }
             }
