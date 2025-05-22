@@ -1,6 +1,7 @@
 services:
   jenkins:
-    build: .
+    image: jenkins/jenkins:lts
+    user: root
     container_name: jenkins
     restart: always
     ports:
