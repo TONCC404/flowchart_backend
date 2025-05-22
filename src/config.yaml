@@ -22,7 +22,7 @@ baidu:
 google:
   client_id: 473106904157-p0lf2foir7f3mdu0d2amp4b6aithud66.apps.googleusercontent.com
   client_secret: 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
-  google_redirect_uri: http://127.0.0.1:8000/google_authorize
+  google_redirect_uri: http://43.161.238.135:8000/google_authorize
 
 wechat:
   wechat_app_id: wxed03a467845dc9aa
@@ -49,7 +49,7 @@ postgresql:
 #      similarity: 0.7
 #      dimensions: 512
 #frontend_redirect_url: http://127.0.0.1:8006
-frontend_redirect_url: http://101.42.33.129:8006
+frontend_redirect_url: http://43.161.238.135:8006
 features:
   flow_generation:
     model: llm
