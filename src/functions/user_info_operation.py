@@ -28,9 +28,11 @@ class UserInfoOperation:
             # Create JWT token
             access_token = create_access_token(data={"sub": username})
             avatar = result["result"]["avatar_url"]
-            return {"access_token": access_token, "token_type": "bearer", "avatar": avatar}
+            return {"status":"success","message":"no_user", "access_token": access_token, "token_type": "bearer", "avatar": avatar}
+        elif result['status'] == 'no_user':
+            return {"status":"success", "message":"no_user"}
         else:
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+            return {"status":"failure","message":"Invalid password"}
 
     async def google_redirect_callback(self, request):
         redirect_uri = self.service_config.google.google_redirect_uri

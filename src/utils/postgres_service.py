@@ -108,7 +108,7 @@ class PostgresqlService:
             query = "SELECT password_hash, avatar_url FROM users WHERE username = $1"
             user_record = await self.connection.fetchrow(query, username)
             if not user_record:
-                return {"status": "error", "message": "Invalid username or password"}
+                return {"status": "no_user", "message": "Invalid username or password"}
             stored_password_hash = user_record["password_hash"]
             pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
             if pwd_context.verify(password, stored_password_hash):
