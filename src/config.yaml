@@ -36,7 +36,7 @@ paypal:
   cancel_url: http://127.0.0.1:3000/paypal/cancel_payment
 
 postgresql:
-  host: 101.42.33.129
+  host: 43.161.238.135
   port: 526
   database: ichar_db
   user: root
@@ -50,6 +50,12 @@ postgresql:
 #      dimensions: 512
 #frontend_redirect_url: http://127.0.0.1:8006
 frontend_redirect_url: http://43.161.238.135:8006
+mail:
+  host: 127.0.0.1
+  port: 2020
+  username: kate@123.com
+  password: 123456q
+
 features:
   flow_generation:
     model: llm

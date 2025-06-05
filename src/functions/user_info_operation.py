@@ -30,7 +30,7 @@ class UserInfoOperation:
             avatar = result["result"]["avatar_url"]
             return {"status":"success","message":"no_user", "access_token": access_token, "token_type": "bearer", "avatar": avatar}
         elif result['status'] == 'no_user':
-            return {"status":"success", "message":"no_user"}
+            return {"status":"no_user", "message":"no_user"}
         else:
             return {"status":"failure","message":"Invalid password"}
 
