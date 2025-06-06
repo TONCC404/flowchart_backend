@@ -28,7 +28,7 @@ class UserInfoOperation:
             # Create JWT token
             access_token = create_access_token(data={"sub": username})
             avatar = result["result"]["avatar_url"]
-            return {"status":"success","message":"no_user", "access_token": access_token, "token_type": "bearer", "avatar": avatar}
+            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar}
         elif result['status'] == 'no_user':
             return {"status":"no_user", "message":"no_user"}
         else:
@@ -122,15 +122,24 @@ class UserInfoOperation:
 
 
     async def register(self, register_request: RegisterRequest):
-        username = register_request.username
-        password = register_request.password
-        result = await self.postgresql_service.check_user_exists(username)
-        if result:
-            return {"status": "fail", "message": "User already exist"}
-            # raise HTTPException(status_code=400, detail="Username already exists")
-        # Hash the password before storing it
-        await self.postgresql_service.insert_userInfo(username=username, password=password)
-        return {"status": "success", "message": "User registered successfully"}
+        try:
+            username = register_request.username
+            password = register_request.password
+            org = register_request.organization
+            industry = register_request.industry
+            team = register_request.team
+            collaborators = register_request.collaborators
+            result = await self.postgresql_service.check_user_exists(username)
+            if result:
+                return {"status": "fail", "message": "User already exist"}
+                # raise HTTPException(status_code=400, detail="Username already exists")
+            # Hash the password before storing it
+            await self.postgresql_service.insert_userInfo(username=username, password=password, org=org, team=team, industry = industry, collaborators=collaborators)
+            access_token = create_access_token(data={"sub": username})
+            return {"status": "success", "token":access_token, "message": "User registered successfully"}
+        except Exception as error:
+            logger.info(f"register error, error is:{error}")
+            return {"status": "error", "message": "User registered error"}
 
 
 

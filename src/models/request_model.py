@@ -16,9 +16,13 @@ class LoginRequest(BaseModel):
 class RegisterRequest(BaseModel):
     username: str
     password: str
+    organization: str | None = None
+    industry: str | None = None
+    team: str | None = None
     email: str | None = None
     phone: str | None = None
     avatar_url: str| None = None
+    collaborators: List[str] | None = None
 
 class Token(BaseModel):
     access_token: str

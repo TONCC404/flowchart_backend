@@ -68,14 +68,14 @@ class PostgresqlService:
             if self.connection:
                 await self.connection.close()
 
-    async def insert_userInfo(self, username, password=None, org=None,email=None, phone=None, avatar_url=None, balance=0, currency="USD"):
+    async def insert_userInfo(self, username, password=None, org=None,team = None, industry = None, collaborators = None, email=None, phone=None, avatar_url=None, balance=0, currency="USD"):
 
         try:
             insert_query = """
             INSERT INTO users (
-                id, username, org, password_hash, email, phone, avatar_url, balance, currency, is_active, created_at
+                id, username, org, team, industry, collaborators, password_hash, email, phone, avatar_url, balance, currency, is_active, created_at
             ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
             )
         """
             user_id = str(uuid.uuid4())
@@ -89,7 +89,7 @@ class PostgresqlService:
                 await self.create_connection()
             await self.connection.execute(
                 insert_query,
-                user_id, username, org, hashed_password, email, phone, avatar_url, balance, currency, is_active, created_at
+                user_id, username, org, team, industry, collaborators, hashed_password, email, phone, avatar_url, balance, currency, is_active, created_at
             )
 
             print(f"User {username} inserted successfully.")
