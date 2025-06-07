@@ -1,8 +1,8 @@
 CREATE TABLE flowcharts (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(255) NOT NULL;
-    org_id VARCHAR(255) NOT NULL;
-    flowchart_id VARCHAR(255) UNIQUE NOT NULL,
+    user_id VARCHAR(255) NOT NULL,
+    org_id VARCHAR(255) NOT NULL,
+    flow_id VARCHAR(255) UNIQUE NOT NULL,
     name VARCHAR(255),
     data JSONB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

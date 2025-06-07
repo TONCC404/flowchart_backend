@@ -29,14 +29,21 @@ class Token(BaseModel):
     token_type: str
 
 class Node(BaseModel):
-    node_id: str
+    id: str
     position: Dict[str, Any]
     data: Dict[str, Any]
+    isVirtual: bool
+    size:Dict[str, Any]
+    connectionPoints: List[Any]
 
 class Edge(BaseModel):
-    edge_id: str
-    source_node: Dict[str, Any]
-    target_node: Dict[str, Any]
+    id: str
+    arrowHead: bool
+    isVirtual: bool
+    source: Dict[str, Any]
+    target: Dict[str, Any]
+    sourceConnectionPoint: Dict[str, Any]
+    targetConnectionPoint: Dict[str, Any]
 
 class Flow(BaseModel):
     nodes: List[Node]
@@ -48,7 +55,7 @@ class FlowChart(BaseModel):
     data: Flow
 
 class SaveFlowRequest(BaseModel):
-    username: str
+    username: str|None = None
     user_id: str
     flowchart: FlowChart
 
