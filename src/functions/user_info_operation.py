@@ -28,7 +28,8 @@ class UserInfoOperation:
             # Create JWT token
             access_token = create_access_token(data={"sub": username})
             avatar = result["result"]["avatar_url"]
-            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar}
+            id = result["result"]["avatar_url"]
+            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar, "user_id": id}
         elif result['status'] == 'no_user':
             return {"status":"no_user", "message":"no_user"}
         else:

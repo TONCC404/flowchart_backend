@@ -105,7 +105,7 @@ class PostgresqlService:
         try:
             if not self.connection or self.connection.is_closed():
                 await self.create_connection()
-            query = "SELECT password_hash, avatar_url FROM users WHERE username = $1"
+            query = "SELECT id, password_hash, avatar_url FROM users WHERE username = $1"
             user_record = await self.connection.fetchrow(query, username)
             if not user_record:
                 return {"status": "no_user", "message": "Invalid username or password"}
