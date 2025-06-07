@@ -8,6 +8,8 @@ from src.utils.log_config import log_config
 import requests,uuid
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.responses import RedirectResponse
+from urllib.parse import urlencode
 logger = log_config()
 
 class UserInfoOperation:
@@ -26,9 +28,11 @@ class UserInfoOperation:
             # Create JWT token
             access_token = create_access_token(data={"sub": username})
             avatar = result["result"]["avatar_url"]
-            return {"access_token": access_token, "token_type": "bearer", "avatar": avatar}
+            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar}
+        elif result['status'] == 'no_user':
+            return {"status":"no_user", "message":"no_user"}
         else:
-            raise HTTPException(status_code=401, detail="Invalid username or password")
+            return {"status":"failure","message":"Invalid password"}
 
     async def google_redirect_callback(self, request):
         redirect_uri = self.service_config.google.google_redirect_uri
@@ -56,7 +60,14 @@ class UserInfoOperation:
         access_token = create_access_token(data={"sub": user_name})
         if not result:
             await self.postgresql_service.insert_userInfo(username=user_name, email=email, avatar_url=user_pic)
-        return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
+        # return {"access_token": access_token, "token_type": "bearer", "avatar": user_pic}
+        params = urlencode({
+            "token": access_token,
+            "avatar": user_pic,
+            "username": user_name
+        })
+        frontend_redirect_url = f"{self.service_config.frontend_redirect_url}/introduction?{params}"
+        return RedirectResponse(frontend_redirect_url)
 
     async def wechat_login(self):
         state = uuid.uuid4().hex
@@ -111,15 +122,24 @@ class UserInfoOperation:
 
 
     async def register(self, register_request: RegisterRequest):
-        username = register_request.username
-        password = register_request.password
-        result = await self.postgresql_service.check_user_exists(username)
-        if result:
-            return {"status": "fail", "message": "User already exist"}
-            # raise HTTPException(status_code=400, detail="Username already exists")
-        # Hash the password before storing it
-        await self.postgresql_service.insert_userInfo(username=username, password=password)
-        return {"status": "success", "message": "User registered successfully"}
+        try:
+            username = register_request.username
+            password = register_request.password
+            org = register_request.organization
+            industry = register_request.industry
+            team = register_request.team
+            collaborators = register_request.collaborators
+            result = await self.postgresql_service.check_user_exists(username)
+            if result:
+                return {"status": "fail", "message": "User already exist"}
+                # raise HTTPException(status_code=400, detail="Username already exists")
+            # Hash the password before storing it
+            await self.postgresql_service.insert_userInfo(username=username, password=password, org=org, team=team, industry = industry, collaborators=collaborators)
+            access_token = create_access_token(data={"sub": username})
+            return {"status": "success", "token":access_token, "message": "User registered successfully"}
+        except Exception as error:
+            logger.info(f"register error, error is:{error}")
+            return {"status": "error", "message": "User registered error"}
 
 
 

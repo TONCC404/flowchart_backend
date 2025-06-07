@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Literal
 
 class FlowRequest(BaseModel):
     prompt: str        #user prompt from UI
@@ -8,15 +8,21 @@ class AuditReportRequest(BaseModel):
     prompt: str        #user prompt from UI
 
 class LoginRequest(BaseModel):
+    action: Literal['email_verification', 'password_verification']
     username: str
-    password: str
+    password: str | None = None
+    verification_code: str | None = None
 
 class RegisterRequest(BaseModel):
     username: str
     password: str
+    organization: str | None = None
+    industry: str | None = None
+    team: str | None = None
     email: str | None = None
     phone: str | None = None
     avatar_url: str| None = None
+    collaborators: List[str] | None = None
 
 class Token(BaseModel):
     access_token: str

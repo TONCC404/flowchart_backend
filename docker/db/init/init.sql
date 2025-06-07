@@ -1,0 +1,2 @@
+CREATE DATABASE wxMall_db;
+CREATE DATABASE iChar_db;

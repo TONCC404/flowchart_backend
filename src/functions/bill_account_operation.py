@@ -17,4 +17,5 @@ class BillAccountOperation:
         self.paypal_client = PayPalClient()
 
     async def paypal_account_operation(self, amount) -> str:
+        logger.info(f"process paypal operation, amount is:{amount}")
         return await self.paypal_client.create_order(amount)

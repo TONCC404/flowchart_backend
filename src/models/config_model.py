@@ -64,13 +64,22 @@ class PayPalConfig(BaseModel):
     paypal_redirect_uri: str
     cancel_url: str
 
+class MailConfig(BaseModel):
+    host: str
+    port: int
+    username: str
+    password: str
+
 class ServiceConfig(BaseModel):
+    origins: list[str]
     llm: LLMConfig
     baidu: BaiduConfig
     google: GoogleConfig
     wechat: WeChatConfig
     paypal: PayPalConfig
     postgresql: PostgresqlConfig
+    mail: MailConfig
+    frontend_redirect_url: str
     features: FeaturesConfig
 
 

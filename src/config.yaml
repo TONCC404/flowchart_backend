@@ -1,3 +1,11 @@
+origins:
+  - "http://localhost:8006"
+  - "http://localhost:8000"
+  - "http://127.0.0.1:8006"
+  - "http://127.0.0.1:8000"
+  - "https://google.com"
+  - "http://www.cace.club:8006"
+  - "http://43.161.238.135:8006"
 
 llm:
   url: https://api.llm.net/v1/chat/completions
@@ -14,7 +22,18 @@ baidu:
 google:
   client_id: 473106904157-p0lf2foir7f3mdu0d2amp4b6aithud66.apps.googleusercontent.com
   client_secret: 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
-  google_redirect_uri: http://127.0.0.1:8000/google_authorize
+  google_redirect_uri: http://43.161.238.135:8000/google_authorize
+
+wechat:
+  wechat_app_id: wxed03a467845dc9aa
+  wechat_app_secret: bff0dd0cc61d6cc771fd7ffc21c7a3bf
+  wechat_redirect_uri: test
+
+paypal:
+  paypal_client_id: ATlxPFgf2van_v1DIo0Beem9Js5QWdvtxsFFUOhBU5BqYdbVmQSIXvkp83NP8-ehdo72ys1IHgrVkUYc
+  paypal_client_secret: EJPoIHvDwQNrgSl9QZDEQMuZJqzlb-OmfH2CNjOJ88EjQbyAH11mUL_sW9rxCrZbjKVLC4U8LGWx_Zq9
+  paypal_redirect_uri: http://127.0.0.1:3000/paypal/callback
+  cancel_url: http://127.0.0.1:3000/paypal/cancel_payment
 
 wechat:
   wechat_app_id: wxed03a467845dc9aa
@@ -28,7 +47,7 @@ paypal:
   cancel_url: http://127.0.0.1:3000/paypal/cancel_payment
 
 postgresql:
-  host: 101.42.33.129
+  host: 43.161.238.135
   port: 526
   database: ichar_db
   user: root
@@ -40,6 +59,13 @@ postgresql:
 #      encoding_format: float
 #      similarity: 0.7
 #      dimensions: 512
+#frontend_redirect_url: http://127.0.0.1:8006
+frontend_redirect_url: http://43.161.238.135:8006
+mail:
+  host: 127.0.0.1
+  port: 2020
+  username: kate@123.com
+  password: 123456q
 
 features:
   flow_generation:

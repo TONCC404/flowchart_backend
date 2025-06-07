@@ -8,24 +8,16 @@ from src.utils.config_loader import SERVICE_CONFIG
 from src.utils.model_adapter import ModelAdapter
 import json
 from pathlib import Path
-from src.models.request_model import FlowRequest, LoginRequest, RegisterRequest, SaveFlowRequest, DeleteFlowRequest, QueryFlowRequest, PaymentRequest
+from src.models.request_model import FlowRequest, LoginRequest, RegisterRequest, SaveFlowRequest, DeleteFlowRequest, QueryFlowRequest,PayPalOrderRequest
 from src.utils.postgres_service import PostgresqlService
 from starlette.middleware.sessions import SessionMiddleware
 import secrets
-import stripe
+from src.functions.bill_account_operation import BillAccountOperation
 
 model_adapter = ModelAdapter(service_config=SERVICE_CONFIG)
 postgresql_service = PostgresqlService(service_config=SERVICE_CONFIG)
 app = FastAPI()
-
-# Configure CORS
-origins = ["https://yiyan.baidu.com",
-           "http://localhost:3000",
-           "http://localhost:8000",
-           "http://127.0.0.1:3000",
-           "http://127.0.0.1:8000",
-            "https://google.com"
-           ]
+origins = SERVICE_CONFIG.origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -39,6 +31,17 @@ from src.functions.user_info_operation import UserInfoOperation
 
 def make_json_response(data, status_code=200):
     return JSONResponse(content=data, status_code=status_code)
+
+
+
+@app.post("/paypal/create_order")
+async def create_paypal_order(data: PayPalOrderRequest):
+    try:
+        bill_account = BillAccountOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+        return await bill_account.paypal_account_operation(data.amount)
+    except Exception as e:
+        print("PayPal create order error:", e)
+        raise HTTPException(status_code=500, detail="PayPal order creation failed")
 
 @app.post("/generate_flow_picture")
 async def generate_sentences(flow_request: FlowRequest):
@@ -78,8 +81,9 @@ async def login_via_google(request: Request):
 async def auth_callback(request: Request):
     try:
         user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-        result = await user_info_operation.google_oauth_callback(request)
-        return JSONResponse(content=result)
+        return await user_info_operation.google_oauth_callback(request)
+        # result = await user_info_operation.google_oauth_callback(request)
+        # return JSONResponse(content=result)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -89,16 +93,16 @@ async def wechat_login():
     Get WeChat login QR code URL.
     """
     user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-    return user_info_operation.wechat_login()
+    return await user_info_operation.wechat_login()
 
 
-@app.get("/wechat_login_callback")
-async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
-    """
-    Handle WeChat login callback.
-    """
-    user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
-    return user_info_operation.wechat_oauth_callback(code)
+# @app.get("/wechat_login_callback")
+# async def wechat_login_callback(code: str = Query(...), state: str = Query(...)):
+#     """
+#     Handle WeChat login callback.
+#     """
+#     user_info_operation = UserInfoOperation(model_adapter=model_adapter, postgresql_service=postgresql_service)
+#     return await user_info_operation.wechat_oauth_callback(code)
 
 
 @app.post("/register")
@@ -107,18 +111,18 @@ async def register_user(register_request: RegisterRequest):
     result = await user_info_operation.register(register_request)
     return result
 
-@app.post("/create-payment-intent")
-def create_payment_intent(data: PaymentRequest):
-    try:
-        intent = stripe.PaymentIntent.create(
-            amount=data.amount,
-            currency=data.currency,
-            description=f"Subscription to {data.plan_name}",
-            receipt_email=data.email,
-        )
-        return {"clientSecret": intent.client_secret}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+# @app.post("/create-payment-intent")
+# def create_payment_intent(data: PaymentRequest):
+#     try:
+#         intent = stripe.PaymentIntent.create(
+#             amount=data.amount,
+#             currency=data.currency,
+#             description=f"Subscription to {data.plan_name}",
+#             receipt_email=data.email,
+#         )
+#         return {"clientSecret": intent.client_secret}
+#     except Exception as e:
+#         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/save_flow")
 async def save_flow(save_flow_request: SaveFlowRequest):
@@ -206,4 +210,4 @@ async def serve_static(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=9876, log_level="info")
