@@ -125,6 +125,9 @@ class PostgresqlService:
 
     async def save_flow(self, flow_id, name, data, user_id):
         try:
+            if not self.pool:
+                logger.info("Connection pool has been created.")
+                await self.create_pool()
             async with self.pool.acquire() as conn:
                 async with conn.transaction():
                     insert_query = """
