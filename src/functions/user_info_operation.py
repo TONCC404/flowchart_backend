@@ -31,7 +31,8 @@ class UserInfoOperation:
             id = result["result"]["id"]
             org = result["result"]["org"]
             role = result["result"]["role"]
-            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar, "user_id": id, "org": org, "role": role}
+            username = result["result"]["username"]
+            return {"status":"success","message":"no_user", "token": access_token, "token_type": "bearer", "avatar": avatar, "user_id": id, "org": org, "role": role, "username": username}
         elif result['status'] == 'no_user':
             return {"status":"no_user", "message":"no_user"}
         else:
